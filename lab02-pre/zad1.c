@@ -28,203 +28,228 @@ void fprintMatrix(FILE * file, char * txt, float ** matrix, int size) {
 	}
 }
 
-int main(void) {
+void d_inicjalizuj_wektor(int **A)
+{
+    *A = ivector(1, N);
+    for (int i = 1; i <= N; i++)
+        (*A)[i] = 0;
+}
 
-	FILE * file = fopen("out.dat", "w");
-	float ** A  = matrix(1, N, 1, N); //Alokacja macierzy n x n
-	float ** B = matrix(1, N, 1, N);
-	int iterr = 1;
-	//Uzupelnianie macierzy
-	for(int i = 1; i <= N; i++) {
-		for(int j = 1; j <= N; j ++) {
-			A[i][j] = iterr;
-			B[i][j] = iterr;
-			iterr++;
+float max_value(float **A)
+{
+    float max;
+    if((A[1][1])>=0){
+      max = (A[1][1]);
+    }else{
+      max = (-1)*(A[1][1]);
+    }
+    
+    for (int i = 1; i <= N; i++){
+        for (int j = 1; j <= N; j++){
+            if ((A[i][j]) > max || (A[i][j])<(max*(-1))){
+              if(A[i][j]>=0){
+                max = A[i][j];
+              }else max=(-1)*(A[i][j]);
+            }
+        }
+    }
+    //printf("%f\n",max);
+    return max;
+}
+
+void pomnoz(float **A, float **B, float ***C)
+{
+    float suma;
+    for (int i = 1; i <= N; i++)
+    {
+        for (int j = 1; j <= N; j++){
+            suma = 0;
+            for (int k = 1; k <= N; k++)
+            {
+                suma += A[i][k] * B[k][j];
+            }
+            (*C)[i][j] = suma;
+        }
+    }
+}
+
+///////////////////////////
+int main(){
+
+float **A=matrix(1,N,1,N);
+float **B=matrix(1,N,1,N);
+
+//uzupelniam macierze A i B
+int k=1;
+for (int i=1;i<=N;i++){
+  for(int j = 1; j <= N; j ++) {
+			A[i][j] = k;
+			B[i][j] = k;
+			k++;
 		}
-	}
-	B[1][1] = 1.1;
-	//Wypisywanie macierzy
-	printMatrix("Macierz A:\n", A, N);
-	fprintMatrix(file, "Macierz A:\n", A, N);
-	printMatrix("\nMacierz B:\n", B, N);
-	fprintMatrix(file, "\nMacierz B:\n", B, N);
+}
+B[1][1]=1.1;
+printMatrix("Macierz A:\n", A, N);
+printMatrix("Macierz B:\n", B, N);
 
-	//Alokacja wektorow permutacji oraz wypelnienie ich procedura ludcmp i inicjalizacja znaku permutacji
-	int * indxA = ivector(1, N);
-	int * indxB = ivector(1, N);
-	float dA;
-	float dB;
-	ludcmp(A, N, indxA, &dA);
-	ludcmp(B, N, indxB, &dB);
+//tworze wektory premutacji typu int
+int *indxA=ivector(1, N);
+//d_inicjalizuj_wektor(&indxA);
+int *indxB=ivector(1, N);
+//d_inicjalizuj_wektor(&indxA);
 
-    	//Alokacja macierzy L i U dla macierzy A i B
-	float ** LA  = matrix(1, N, 1, N);
-	float ** LB = matrix(1, N, 1, N);
-	float ** UA  = matrix(1, N, 1, N);
-	float ** UB = matrix(1, N, 1, N);
+//tworze zmienne typu float
+float mA;
+float mB;
 
-	//Uzupelnienie macierzy L i U
-	for(int i = 1; i <= N; i++) {
-		for(int j = 1; j <= N; j ++) {
-			if (i == j) {
-				LA[i][j] = 1;
-				LB[i][j] = 1;
-				UA[i][j] = A[i][j];
-				UB[i][j] = B[i][j];
-			}
-			else if(i < j) {
-				LA[i][j] = 0;
-				LB[i][j] = 0;
-				UA[i][j] = A[i][j];
-				UB[i][j] = B[i][j];
-			}
-			else {
-				LA[i][j] = A[i][j];
-				LB[i][j] = B[i][j];
-				UA[i][j] = 0;
-				UB[i][j] = 0;
-			}
-			iterr++;
+//wykonuje procedurę ludcmp
+ludcmp(A, N, indxA, &mA);
+ludcmp(B, N, indxB, &mB);
+
+//drukuje macierze po rozkładzie
+printMatrix("Macierz A po rozkładzie:\n", A, N);
+printMatrix("Macierz B op rozkładzie:\n", B, N);
+
+
+
+//macierz L dla A trójkątna górna
+float **LA=matrix(1, N, 1, N);
+
+//macierz L dla B trójkątna górna
+float ** LB = matrix(1, N, 1, N);
+
+//macierz U dla A trójkątna dolna
+float ** UA  = matrix(1, N, 1, N);
+
+//macierz U dla B trójkątna dolna
+float ** UB = matrix(1, N, 1, N);
+
+//alokuje komorki maecierzy LA i LB
+for (int i=1;i<=N;i++){
+  for(int j = 1; j <= N; j ++) {
+    if(i==j){
+			LA[i][j] = 1;
+			LB[i][j] = 1;
 		}
-	}
-  
-	//Wypisywanie macierzy L i U
-	printMatrix("\nMacierz L dla A:\n", LA, N);
-	fprintMatrix(file, "\nMacierz L dla A:\n", LA, N);
-	printMatrix("\nMacierz L dla B:\n", LB, N);
-	fprintMatrix(file, "\nMacierz L dla B:\n", LB, N);
-	printMatrix("\nMacierz U dla A:\n", UA, N);
-	fprintMatrix(file, "\nMacierz U dla A:\n", UA, N);
-	printMatrix("\nMacierz U dla B:\n", UB, N);
-	fprintMatrix(file, "\nMacierz U dla B:\n", UB, N);
-	//Alokacja i uzupelnienie wektorow wyrazow wolnych, na ktorych wykonujemy procedure lubksb
-	float * a1 = vector(1, N);
-	float * a2 = vector(1, N);
-	float * a3 = vector(1, N);
-	float * b1 = vector(1, N);
-	float * b2 = vector(1, N);
-	float * b3 = vector(1, N);
+    else if(i<j){
+      LA[i][j] = 0;
+			LB[i][j] = 0;
+    }
+    else{
+      LA[i][j] = A[i][j];
+			LB[i][j] = A[i][j];
+    }
+  }
+}
 
-	a1[1] = 1; a1[2] = 0; a1[3] = 0;
-	a2[1] = 0; a2[2] = 1; a2[3] = 0;
-	a3[1] = 0; a3[2] = 0; a3[3] = 1;
-	b1[1] = 1; b1[2] = 0; b1[3] = 0;
-	b2[1] = 0; b2[2] = 1; b2[3] = 0;
-	b3[1] = 0; b3[2] = 0; b3[3] = 1;
-	lubksb(A, N, indxA, a1);
-	lubksb(A, N, indxA, a2);
-	lubksb(A, N, indxA, a3);
-	lubksb(B, N, indxB, b1);
-	lubksb(B, N, indxB, b2);
-	lubksb(B, N, indxB, b3);
-	//Alokacja, uzupelnienie i wypisanie macierzy odwrotnych
-	float ** A_inv = matrix(1, N, 1, N);
-	float ** B_inv = matrix(1, N, 1, N);
+//alokuje komorki maecierzy UA i UB
+for (int i=1;i<=N;i++){
+  for(int j = 1; j <= N; j ++) {
+    if(i<=j){
+      UA[i][j] = A[i][j];
+			UB[i][j] = B[i][j];
+    }
+    else{
+      UA[i][j] = 0;
+			UB[i][j] = 0;
+    }
+  }
+}
 
-	for(int i = 1; i <= N; i++) {
-        	A_inv[i][1] = a1[i];
-        	A_inv[i][2] = a2[i];
-        	A_inv[i][3] = a3[i];
-        	B_inv[i][1] = b1[i];
-        	B_inv[i][2] = b2[i];
-        	B_inv[i][3] = b3[i];
-    	}
-	printMatrix("\nMacierz A^-1:\n", A_inv, N);
-	fprintMatrix(file, "\nMacierz A^-1:\n", A_inv, N);
-	printMatrix("\nMacierz B^-1:\n", B_inv, N);
-	fprintMatrix(file, "\nMacierz B^-1:\n", B_inv, N);
-	iterr = 1;
+//drukuje macierze po rozkładzie
+printMatrix("Macierz LA:\n", LA, N);
+printMatrix("Macierz LB:\n", LB, N);
+printMatrix("Macierz UA:\n", UA, N);
+printMatrix("Macierz UB:\n", UB, N);
 
-	for(int i = 1; i <= N; i++) {
-		for(int j = 1; j <= N; j ++) {
-  			A[i][j] = iterr;
-  			B[i][j] = iterr;
-  			iterr++;
-  		}
-  	}
-  	B[1][1] = 1.1;
-	//Liczenie norm macierzy i macierzy odwrotnych
-	float maxA = 0;
-	float maxB = 0;
-	float maxA_inv = 0;
-	float maxB_inv = 0;
+//tworze wektory wyrazów wolnych 
+float *x1=vector(1, N);
+x1[1]=1;x1[2]=0;x1[3]=0;
+float *x2=vector(1, N);
+x2[1]=0;x2[2]=1;x2[3]=0;
+float *x3=vector(1, N);
+x3[1]=0;x3[2]=0;x3[3]=1;
 
-	for(int i = 1; i <= N; i++) {
-		for(int j = 1; j <= N; j ++) {
-			if(fabs(A[i][j]) > maxA)
-				maxA = fabs(A[i][j]);
-			if(fabs(B[i][j]) > maxB)
-				maxB = fabs(B[i][j]);
-			if(fabs(A_inv[i][j]) > maxA_inv)
-				maxA_inv= fabs(A_inv[i][j]);
-			if(fabs(B_inv[i][j]) > maxB_inv)
-				maxB_inv= fabs(B_inv[i][j]);
+float *y1=vector(1, N);
+y1[1]=1;y1[2]=0;y1[3]=0;
+float *y2=vector(1, N);
+y2[1]=0;y2[2]=1;y2[3]=0;
+float *y3=vector(1, N);
+y3[1]=0;y3[2]=0;y3[3]=1;
+//
+lubksb(A,N,indxA,x1);
+lubksb(A,N,indxA,x2);
+lubksb(A,N,indxA,x3);
+lubksb(B,N,indxB,y1);
+lubksb(B,N,indxB,y2);
+lubksb(B,N,indxB,y3);
+
+
+
+//towrze macierz A^-1 wynikowa
+float **Awyn=matrix(1, N, 1, N);
+//towrze macierz B^-1 wynikowa
+float **Bwyn=matrix(1, N, 1, N);
+
+
+
+//wpisuje wyniki
+for(int i=1;i<=N;i++){
+  Awyn[i][1]=x1[i];
+  Awyn[i][2]=x2[i];
+  Awyn[i][3]=x3[i];
+  Bwyn[i][1]=y1[i];
+  Bwyn[i][2]=y2[i];
+  Bwyn[i][3]=y3[i];
+}
+
+//drukuje macierze po odwroceniu
+printMatrix("Macierz A^-1':\n",Awyn, N);
+printMatrix("Macierz B^-1':\n",Bwyn, N);
+
+printf("maximum macierzy A %.2f\n",max_value(A));
+printf("maximum macierzy A^-1 %.2f\n",max_value(Awyn));
+printf("maximum macierzy B %.2f\n",max_value(B));
+printf("maximum macierzy B^-1 %.2f\n",max_value(Bwyn));
+
+//wskaznik uwarunkowania macierzy cond(A)=norm(A)*norm(A-1)
+printf("\n\nwskaznik uwarunkowania macierzy %.2f\n",max_value(A)*max_value(Awyn));
+printf("wskaznik uwarunkowania macierzy %.2f\n",max_value(B)*max_value(Bwyn));
+
+
+k=1;
+for (int i=1;i<=N;i++){
+  for(int j = 1; j <= N; j ++) {
+			A[i][j] = k;
+			B[i][j] = k;
+			k++;
 		}
-	}
+}
+B[1][1]=1.1;
 
-	float kappaA = maxA * maxA_inv;
-	float kappaB = maxB * maxB_inv;
+//ilocznyn A*A-1
+float ** A_iloczyn = matrix(1, N, 1, N);
+pomnoz(A,Awyn,&A_iloczyn);
 
-	printf("\n||A|| = %g\n||A^-1|| = %f = %g\nKappaA = %f = %g\n", maxA, maxA_inv, maxA_inv, kappaA, kappaA);
-	fprintf(file, "\n||A|| = %g\n||A^-1|| = %f = %g\nKappaA = %f = %g\n", maxA, maxA_inv, maxA_inv, kappaA, kappaA);
-	printf("\n||B|| = %g\n||B^-1|| = %f\nKappaB = %f\n", maxB, maxB_inv, kappaB);	
-	fprintf(file, "\n||B|| = %g\n||B^-1|| = %f\nKappaB = %f\n", maxB, maxB_inv, kappaB);		
-	iterr = 1;
+//ilocznyn B*B-1
+float ** B_iloczyn = matrix(1, N, 1, N);
+pomnoz(B,Bwyn,&B_iloczyn);
 
-	for(int i = 1; i <= N; i++) {
-		for(int j = 1; j <= N; j ++) {
-			A[i][j] = iterr;
-			B[i][j] = iterr;
-			iterr++;
-		}
-	}
-	B[1][1] = 1.1;
-	//Alokowanie macierzy dla iloczynu macierzy oraz uzupelnianie i wypisywanie ich
-	float ** A_product = matrix(1, N, 1, N);
-	float ** B_product = matrix(1, N, 1, N);
-	
-	for(int i = 1; i <= N; i++)
-		for(int j = 1; j <= N; j++)
-			A_product[i][j] = B_product[i][j] = 0;
-	int k;
-	float sumA = 0, sumB = 0;
 
-	for (int i = 1; i <= N; i++) {
-		for (int j = 1; j <= N; j++) {
-			sumA = sumB = 0;
-			for (int k = 1; k <= N; k++) {
-				sumA = sumA + A[i][k] * A_inv[k][j];
-				sumB = sumB + B[i][k] * B_inv[k][j];
-			}
-			A_product[i][j] = sumA;
-			B_product[i][j] = sumB;
-		}
-	}
-	printMatrix("\nA x A^-1:\n", A_product, N); 
-	fprintMatrix(file, "\nA x A^-1:\n", A_product, N); 
-	printMatrix("\nB x B^-1:\n", B_product, N);
-	fprintMatrix(file, "\nB x B^-1:\n", B_product, N);
+//drukuje macierze po iloczynie
+printMatrix("\n\nMacierz iloczynu AA^-1':\n",A_iloczyn, N);
+printMatrix("Macierz iloczynu BB^-1':\n",B_iloczyn, N);
 
-	fclose(file);
-	//Zwalnianie pamieci
-	free_matrix(A, 1, N, 1, N);
-	free_matrix(B, 1, N, 1, N);
-	free_matrix(LA, 1, N, 1, N);
-	free_matrix(LB, 1, N, 1, N);
-	free_matrix(UA, 1, N, 1, N);
-	free_matrix(UB, 1, N, 1, N);
-	free_matrix(A_inv, 1, N, 1, N);
-	free_matrix(B_inv, 1, N, 1, N);
-	free_matrix(A_product, 1, N, 1, N);
-	free_matrix(B_product, 1, N, 1, N);
-	free_vector(a1, 1, N);
-	free_vector(a2, 1, N);
-	free_vector(a3, 1, N);
-	free_vector(b1, 1, N);
-	free_vector(b2, 1, N);
-	free_vector(b3, 1, N);
-	free_ivector(indxA, 1, N);
-	free_ivector(indxB, 1, N);
-	
-	return 0;
+
+free_matrix(LA, 1, N, 1, N);
+    free_matrix(UA, 1, N, 1, N);
+    free_matrix(LB, 1, N, 1, N);
+    free_matrix(UB, 1, N, 1, N);
+    free_matrix(A, 1, N, 1, N);
+    free_matrix(B, 1, N, 1, N);
+    free_ivector(indxA, 1, N);
+    free_ivector(indxB, 1, N);
+    free_matrix(Awyn, 1, N, 1, N);
+    free_matrix(Bwyn, 1, N, 1, N);
+return 0;
 }
