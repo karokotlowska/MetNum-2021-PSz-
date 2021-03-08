@@ -44,6 +44,17 @@ float max_value(float **A)
     //printf("%f\n",max);
     return max;
 }
+void fprint(float **m, FILE *f)
+{
+    for(int i=1;i<=N;i++)
+    {
+        for(int j=1;j<=N;j++)
+        {
+            fprintf(f, "%f ", m[i][j]);
+        }
+        fprintf(f, "\n");
+    }
+}
 
 float ** cpyMatrix(float **A, float **B)		//kopiuje macierze
 {
@@ -214,61 +225,74 @@ lubksb(A,N,indxA,x3);
 lubksb(A,N,indxA,x4);
 
 //towrze macierz A^-1 wynikowa
-float **Awyn=matrix(1, N, 1, N);
+float **Ai=matrix(1, N, 1, N);
 
 //wpisuje wyniki
 for(int i=1;i<=N;i++){
-  Awyn[1][i]=x1[i];
-  Awyn[2][i]=x2[i];
-  Awyn[3][i]=x3[i];
-  Awyn[4][i]=x4[i];
+  Ai[i][1]=x1[i];
+  Ai[i][2]=x2[i];
+  Ai[i][3]=x3[i];
+  Ai[i][4]=x4[i];
 }
+/*
+float **Ai=matrix(1,N,1,N);
+float *x=vector(1, N);
+    printf("A^-1: \n");
+    for (int j = 1; j <= N; j++) {
+        for (int i = 1; i <= N; i++)
+            x[i] = 0.0;
+        x[j] = 1.0;
+        lubksb(A, N, indxA, x);
+        for (int i = 1; i <= N; i++)
+            Ai[i][j]=x[i];
+    }
 printf("Macierz A");
 printMatrix(A);
-printf("Macierz A-1");
-printMatrix(Awyn);
+printf("Macierz A-1");*/
+printMatrix(Ai);
+fprintf(data, "\nA^-1: \n");
+fprint(Ai, data);
 
-	
+
 
 
 ////////////ILOCZYN////////////////
-	for(i=1;i<=N;i++) 
+
+//ilocznyn A*A-1
+for(i=1;i<=N;i++) 
 	{
 		for(j=1;j<=N;j++)
 		{
 			A[i][j]=1.0/(i+j);				
 		}
 	}
-//ilocznyn A*A-1
 float ** A_iloczyn = matrix(1, N, 1, N);
-pomnoz(Awyn,A,&A_iloczyn);
+pomnoz(A,Ai,&A_iloczyn);
     
 
 //drukuje macierze po iloczynie
 printf("\n\nMacierz iloczynu AA^-1':\n");
 printMatrix(A_iloczyn);
-
+fprintf(data, "\nA*A^-1: \n");
+fprint(A_iloczyn, data);
 
 
 /////WSKAZNIK UWARUNKOWANIA MACIERZY A//////////////////////////
 printf("\nmaximum macierzy A %.2f\n",max_value(A));
-printf("maximum macierzy A^-1 %.2f\n",max_value(Awyn));
+printf("maximum macierzy A^-1 %.2f\n",max_value(Ai));
 
 
 //wskaznik uwarunkowania macierzy cond(A)=norm(A)*norm(A-1)
-printf("\n\nwskaznik uwarunkowania macierzy %.2f\n",max_value(A)*max_value(Awyn));
-
+printf("\n\nwskaznik uwarunkowania macierzy %.2f\n",max_value(A)*max_value(Ai));
+fprintf(data,"\n wsakznik uwarunkowanai:\n%f\n", max_value(A)*max_value(Ai));	
 /////ZAMYKANIE PLIKU I ZAWALNIANIE PAMIECI///////////////////	
 	fclose(data); 
 
 	free_matrix(A,1,N,1,N);
 	free_matrix(LU,1,N,1,1);
-	free_matrix(Awyn,1,N,1,1);
+	free_matrix(Ai,1,N,1,1);
 	
 //	system("pause"); 
 	
 	return 0;
-	
-	
-
 }
